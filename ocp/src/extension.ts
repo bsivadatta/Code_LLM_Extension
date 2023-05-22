@@ -26,7 +26,6 @@ async function makeAPICall(line: string): Promise<string> {
 async function callApi(line: string): Promise<string> {
   try {
     const response = await makeAPICall(line);
-    console.log('API response:', response);
     // Process the response data here
     return response;
   } catch (error) {
@@ -112,8 +111,6 @@ export function activate(context: vscode.ExtensionContext) {
           console.log(code_context)
           //console.log(document.getText(new Range(0, 0, document.lineCount, document.lineAt(document.lineCount).text.length)))
           let suggestion = await callApi(code_context + '\n' +lineBefore.slice(0, endInt));
-          console.log("sibudara")
-          console.log(suggestion)
           result.items.push(
             {
               insertText: suggestion,
