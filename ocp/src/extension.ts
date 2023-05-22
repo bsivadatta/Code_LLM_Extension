@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
         console.log('provideInlineCompletionItems triggered');
-        const regexp =  /\[(.+?),(.+?)\)(.*?):(.*)/;
+        const regexp = /<suggest>\s*/;
         if (position.line <= 0) {
           return;
         }
@@ -88,19 +88,13 @@ export function activate(context: vscode.ExtensionContext) {
 				  }
           const lineBefore = document.lineAt(position.line - offset).text;
           const matches = lineBefore.match(regexp);
-          console.log("sibudara")
-          console.log(document.lineAt(position.line).text)
-          console.log("sibudara")
-          console.log(lineBefore)
-          console.log("sibudara")
-          console.log(matches)
-          console.log("sibudara")
 
           let start = '0';
           let end = '80';
           if (matches) {
-            start = matches[1];
-            end = matches[2];
+            end = String(matches['index']);
+          } else {
+            return result;
           }
           offset++;
           const startInt = parseInt(start, 10);
@@ -109,7 +103,15 @@ export function activate(context: vscode.ExtensionContext) {
                 ? document.lineAt(position.line).text.length
                 : parseInt(end, 10);
           
-          let suggestion = await callApi(lineBefore);
+          //let code_context = document.getText(new Range(0, 0, document.lineCount, 0));
+          let code_context = ""
+          if (position.line > 1){
+            code_context = document.getText(new Range(0, 0, position.line - 2, 0));
+          }
+          code_context = code_context + document.getText(new Range(position.line + 1, 0, document.lineCount, 0))
+          console.log(code_context)
+          //console.log(document.getText(new Range(0, 0, document.lineCount, document.lineAt(document.lineCount).text.length)))
+          let suggestion = await callApi(code_context + '\n' +lineBefore.slice(0, endInt));
           console.log("sibudara")
           console.log(suggestion)
           result.items.push(
