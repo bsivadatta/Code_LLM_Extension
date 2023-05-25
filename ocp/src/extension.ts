@@ -9,7 +9,9 @@ import axios from 'axios';
 
 async function makeAPICall(line: string): Promise<string> {
   const url = 'http://127.0.0.1:8000/suggestion/';
-
+  console.log("sibudara: makeAPICall")
+  console.log(line)
+  console.log("sibudara: makeAPICall")
   const requestData = {
     suggestion: line
   };
@@ -72,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
         console.log('provideInlineCompletionItems triggered');
-        const regexp = /<suggest>\s*/;
+        const regexp = /def\s+\w+\s*\([^)]*\)\s*:/;
         if (position.line <= 0) {
           return;
         }
@@ -85,13 +87,14 @@ export function activate(context: vscode.ExtensionContext) {
 				  if (position.line - offset < 0) {
 					  break;
 				  }
-          const lineBefore = document.lineAt(position.line - offset).text;
-          const matches = lineBefore.match(regexp);
-
+          const lineComment = document.lineAt(position.line - offset - 1).text;
+          const lineFunction = document.lineAt(position.line - offset).text;
+          const matches2 = lineFunction.match(regexp);
+          const lineBefore = lineComment + "\n" + lineFunction
           let start = '0';
           let end = '80';
-          if (matches) {
-            end = String(matches['index']);
+          if (matches2) {
+            end = String(matches2['index']);
           } else {
             return result;
           }
@@ -104,13 +107,12 @@ export function activate(context: vscode.ExtensionContext) {
           
           //let code_context = document.getText(new Range(0, 0, document.lineCount, 0));
           let code_context = ""
-          if (position.line > 1){
-            code_context = document.getText(new Range(0, 0, position.line - 2, 0));
+          if (position.line > 2){
+            code_context = document.getText(new Range(0, 0, position.line - 3, 0));
           }
           code_context = code_context + document.getText(new Range(position.line + 1, 0, document.lineCount, 0))
-          console.log(code_context)
-          //console.log(document.getText(new Range(0, 0, document.lineCount, document.lineAt(document.lineCount).text.length)))
-          let suggestion = await callApi(code_context + '\n' +lineBefore.slice(0, endInt));
+          
+          let suggestion = await callApi(code_context + '\n' + lineBefore);
           result.items.push(
             {
               insertText: suggestion,
