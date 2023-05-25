@@ -9,9 +9,6 @@ import axios from 'axios';
 
 async function makeAPICall(line: string): Promise<string> {
   const url = 'http://127.0.0.1:8000/suggestion/';
-  console.log("sibudara: makeAPICall")
-  console.log(line)
-  console.log("sibudara: makeAPICall")
   const requestData = {
     suggestion: line
   };
@@ -91,7 +88,8 @@ export function activate(context: vscode.ExtensionContext) {
           const lineFunction = document.lineAt(position.line - offset).text;
           const matches2 = lineFunction.match(regexp);
           const lineBefore = lineComment + "\n" + lineFunction
-          let start = '0';
+          
+          let start = String(document.lineAt(position.line).text.length);
           let end = '80';
           if (matches2) {
             end = String(matches2['index']);
@@ -113,6 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
           code_context = code_context + document.getText(new Range(position.line + 1, 0, document.lineCount, 0))
           
           let suggestion = await callApi(code_context + '\n' + lineBefore);
+          // let suggestion = await callApi(lineBefore);
           result.items.push(
             {
               insertText: suggestion,
