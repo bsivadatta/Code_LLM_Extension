@@ -18,6 +18,10 @@
       {
         "command": "ocp.suggest",
         "title": "Suggest"
+      },
+      {
+        "command": "ocp.trial",
+        "title": "Trial"
       }
     ]
   },

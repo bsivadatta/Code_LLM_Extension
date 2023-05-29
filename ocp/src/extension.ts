@@ -43,11 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable: vscode.Disposable | undefined;
 	disposable = vscode.commands.registerCommand('ocp.suggest', () => {
 		let flag = false;
-		vscode.window.showInformationMessage('Press Tab to has fill suggestion');
+    vscode.window.showInformationMessage('Code suggestions activated');
 		let provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
         if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic){
-        console.log('provideInlineCompletionItems triggered');
         //const regexp = /\/\/ \[(.+?),(.+?)\)(.*?):(.*)/;
         const regexp = /def\s+\w+\s*\([^)]*\)\s*:/;
         if (position.line <= 0 || flag) {
@@ -79,9 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
             console.log(end);
             console.log('sibudara');
           }
-          // } else {
-          //   return result;
-          // }
+           
           offset++;
           const startInt = parseInt(start, 10);
           const endInt =
@@ -95,7 +92,8 @@ export function activate(context: vscode.ExtensionContext) {
             code_context = document.getText(new Range(0, 0, position.line - 2, 0));
           }
           code_context = code_context + document.getText(new Range(position.line + 1, 0, document.lineCount, 0))
-          
+          console.log('provideInlineCompletionItems triggered');
+          vscode.window.showInformationMessage('Generating suggestion');
           let suggestion = await callApi(code_context + '\n' + lineBefore);
           // let suggestion = await callApi(lineBefore);
           result.items.push(
@@ -105,6 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           );
           flag = true;
+          vscode.window.showInformationMessage('Press Tab to has fill suggestion');
           return result;
         }}
       }
@@ -116,7 +115,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 
   let disposable2 = vscode.commands.registerCommand('ocp.trial', () => {
-		let provider: vscode.InlineCompletionItemProvider = {
+		vscode.window.showInformationMessage('Press Tab to has fill trial');
+    let provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
         if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic){
         console.log('cmd 2 triggered');
@@ -144,7 +144,7 @@ export function activate(context: vscode.ExtensionContext) {
                 : parseInt(end, 10);
           
           
-          let suggestion = "here here"
+          let suggestion = "\rhere here"
           // let suggestion = await callApi(lineBefore);
           result.items.push(
             {
