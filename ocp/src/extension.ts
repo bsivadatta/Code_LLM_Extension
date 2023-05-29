@@ -38,49 +38,28 @@ async function callApi(line: string): Promise<string> {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "ocp" is now active!');
 
-
-	// vscode.languages.registerHoverProvider(
-	// 	'python',
-	// 	new (class implements vscode.HoverProvider {
-	// 	  provideHover(
-	// 		_document: vscode.TextDocument,
-	// 		_position: vscode.Position,
-	// 		_token: vscode.CancellationToken
-	// 	  ): vscode.ProviderResult<vscode.Hover> {
-	// 		const commentCommandUri = vscode.Uri.parse(`command:ocp.suggest`);
-	// 		const contents = new vscode.MarkdownString(`[Suggest Code](${commentCommandUri})`);
-	
-	// 		// To enable command URIs in Markdown content, you must set the `isTrusted` flag.
-	// 		// When creating trusted Markdown string, make sure to properly sanitize all the
-	// 		// input content so that only expected command URIs can be executed
-	// 		contents.isTrusted = true;
-	
-	// 		return new vscode.Hover(contents);
-	// 	  }
-	// 	})()
-	// );
-
-	let disposable = vscode.commands.registerCommand('ocp.suggest', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
+  let disposable: vscode.Disposable | undefined;
+	disposable = vscode.commands.registerCommand('ocp.suggest', () => {
+		let flag = false;
 		vscode.window.showInformationMessage('Press Tab to has fill suggestion');
-		const provider: vscode.InlineCompletionItemProvider = {
+		let provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
+        if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic){
         console.log('provideInlineCompletionItems triggered');
+        //const regexp = /\/\/ \[(.+?),(.+?)\)(.*?):(.*)/;
         const regexp = /def\s+\w+\s*\([^)]*\)\s*:/;
-        if (position.line <= 0) {
+        if (position.line <= 0 || flag) {
           return;
         }
+        flag = true;
         const result: vscode.InlineCompletionList = {
           items: []
         };
         
         let offset = 1;
-			  while (offset > 0) {
+			  while (true) {
 				  if (position.line - offset < 0) {
 					  break;
 				  }
@@ -88,14 +67,21 @@ export function activate(context: vscode.ExtensionContext) {
           const lineFunction = document.lineAt(position.line - offset).text;
           const matches2 = lineFunction.match(regexp);
           const lineBefore = lineComment + "\n" + lineFunction
-          
-          let start = String(document.lineAt(position.line).text.length);
-          let end = '80';
+          console.log('sibudara');
+          console.log(matches2);
+          let start = '0';
+          let end = String(document.lineAt(position.line).text.length);
           if (matches2) {
             end = String(matches2['index']);
-          } else {
-            return result;
+            console.log('sibudara');
+            console.log(start);
+            console.log('sibudara');
+            console.log(end);
+            console.log('sibudara');
           }
+          // } else {
+          //   return result;
+          // }
           offset++;
           const startInt = parseInt(start, 10);
           const endInt =
@@ -105,8 +91,8 @@ export function activate(context: vscode.ExtensionContext) {
           
           //let code_context = document.getText(new Range(0, 0, document.lineCount, 0));
           let code_context = ""
-          if (position.line > 2){
-            code_context = document.getText(new Range(0, 0, position.line - 3, 0));
+          if (position.line > 1){
+            code_context = document.getText(new Range(0, 0, position.line - 2, 0));
           }
           code_context = code_context + document.getText(new Range(position.line + 1, 0, document.lineCount, 0))
           
@@ -118,14 +104,62 @@ export function activate(context: vscode.ExtensionContext) {
               range: new Range(position.line, startInt, position.line, endInt)
             }
           );
+          flag = true;
           return result;
-        }
+        }}
       }
     };
+    
     vscode.languages.registerInlineCompletionItemProvider({ pattern: '**' }, provider);
+
 	});
 
 
+  let disposable2 = vscode.commands.registerCommand('ocp.trial', () => {
+		let provider: vscode.InlineCompletionItemProvider = {
+      async provideInlineCompletionItems(document, position, context, token) {
+        if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic){
+        console.log('cmd 2 triggered');
+        if (position.line <= 0) {
+          return;
+        }
+        const result: vscode.InlineCompletionList = {
+          items: []
+        };
+        
+        let offset = 1;
+			  while (true) {
+				  if (position.line - offset < 0) {
+					  break;
+				  }
+          
+          let start = '0';
+          let end = String(document.lineAt(position.line).text.length);
+          
+          offset++;
+          const startInt = parseInt(start, 10);
+          const endInt =
+              end === '*'
+                ? document.lineAt(position.line).text.length
+                : parseInt(end, 10);
+          
+          
+          let suggestion = "here here"
+          // let suggestion = await callApi(lineBefore);
+          result.items.push(
+            {
+              insertText: suggestion,
+              range: new Range(position.line, startInt, position.line, endInt)
+            }
+          );
+          return result;
+        }}
+      }
+    };
+    
+    vscode.languages.registerInlineCompletionItemProvider({ pattern: '**' }, provider);
+
+	});
 	context.subscriptions.push(disposable);	
 }
 
