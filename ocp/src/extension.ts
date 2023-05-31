@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable: vscode.Disposable | undefined;
 	disposable = vscode.commands.registerCommand('ocp.suggest', () => {
 		let flag = false;
-    vscode.window.showInformationMessage('Code suggestions activated');
+    vscode.window.showInformationMessage('Code suggestions activated.');
 		let provider: vscode.InlineCompletionItemProvider = {
       async provideInlineCompletionItems(document, position, context, token) {
         if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic){
@@ -68,16 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
           const lineBefore = lineComment + "\n" + lineFunction
           console.log('sibudara');
           console.log(matches2);
-          let start = '0';
+          let start = String(document.lineAt(position.line).text.length);
           let end = String(document.lineAt(position.line).text.length);
-          if (matches2) {
-            end = String(matches2['index']);
-            console.log('sibudara');
-            console.log(start);
-            console.log('sibudara');
-            console.log(end);
-            console.log('sibudara');
-          }
            
           offset++;
           const startInt = parseInt(start, 10);
@@ -103,6 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           );
           flag = true;
+          //console.log(suggestion)
           vscode.window.showInformationMessage('Press Tab to has fill suggestion');
           return result;
         }}
